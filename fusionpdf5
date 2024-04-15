@@ -1,0 +1,58 @@
+import tkinter as tk
+from tkinter import filedialog
+from PyPDF2 import PdfReader, PdfWriter
+import os
+
+def superponer_grilla(pdf_path, grilla_path):
+    # Abrir el PDF de datos y el archivo de la grilla
+    pdf_reader = PdfReader(pdf_path)
+    grilla_reader = PdfReader(grilla_path)
+
+    # Crear un escritor de PDF para el archivo de salida
+    writer = PdfWriter()
+
+    # Obtener la primera página del archivo de grilla
+    grilla_page = grilla_reader.pages[0]
+
+    # Fusionar todas las páginas de datos con la misma página de grilla
+    for pdf_page in pdf_reader.pages:
+        # Crear una nueva página fusionada
+        merged_page = pdf_page
+        merged_page.merge_page(grilla_page)
+
+        # Agregar la página fusionada al escritor
+        writer.add_page(merged_page)
+
+    # Guardar el PDF fusionado
+    nombre_salida = os.path.join(os.path.expanduser("~"), "Downloads", "pdf_superpuesto.pdf")
+    with open(nombre_salida, "wb") as output_file:
+        writer.write(output_file)
+
+    # Mensaje de éxito
+    tk.messagebox.showinfo("Éxito", "PDF fusionado con éxito. El archivo se encuentra en la carpeta de descargas.")
+
+def seleccionar_archivos():
+    # Abrir ventana para seleccionar el archivo PDF de datos
+    pdf_path = filedialog.askopenfilename(title="Seleccionar PDF de Datos",
+                                          filetypes=[("Archivos PDF", "*.pdf")])
+    if not pdf_path:
+        return  # Salir si no se selecciona ningún archivo
+
+    # Abrir ventana para seleccionar el archivo de la grilla
+    grilla_path = filedialog.askopenfilename(title="Seleccionar Grilla PDF",
+                                             filetypes=[("Archivos PDF", "*.pdf")])
+    if not grilla_path:
+        return  # Salir si no se selecciona ningún archivo
+
+    # Superponer la grilla sobre cada página del PDF de datos
+    superponer_grilla(pdf_path, grilla_path)
+
+# Configuración de la ventana principal
+root = tk.Tk()
+root.title("Superponer Grilla en PDF")
+
+# Botón para seleccionar archivos y superponer grilla
+boton_superponer = tk.Button(root, text="Seleccionar Archivos y Superponer Grilla", command=seleccionar_archivos)
+boton_superponer.pack(pady=20)
+
+root.mainloop()
